@@ -1,67 +1,81 @@
-/*
- * C program to implement priority scheduling
- */
- 
 #include <stdio.h>
- 
-//Function to swap two variables
-void swap(int *a,int *b)
-{
-    int temp=*a;
-    *a=*b;
-    *b=temp;
-}
-int main()
-{
-    int n;
-    printf("Enter Number of Processes: ");
-    scanf("%d",&n);
- 
-    // b is array for burst time, p for priority and index for process id
-    int b[n],p[n],index[n];
-    for(int i=0;i<n;i++)
-    {
-        printf("Enter Burst Time and Priority Value for Process %d: ",i+1);
-        scanf("%d %d",&b[i],&p[i]);
-        index[i]=i+1;
-    }
-    for(int i=0;i<n;i++)
-    {
-        int a=p[i],m=i;
- 
-        //Finding out highest priority element and placing it at its desired position
-        for(int j=i;j<n;j++)
-        {
-            if(p[j] > a)
-            {
-                a=p[j];
-                m=j;
+
+// Function to perform Priority Scheduling
+void priorityScheduling(int processes[], int priorities[], int burstTimes[], int n) {
+    // Sort the processes based on priority (in ascending order)
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (priorities[j] > priorities[j + 1]) {
+                // Swap the processes
+                int temp = processes[j];
+                processes[j] = processes[j + 1];
+                processes[j + 1] = temp;
+
+                // Swap the priorities
+                temp = priorities[j];
+                priorities[j] = priorities[j + 1];
+                priorities[j + 1] = temp;
+
+                // Swap the burst times
+                temp = burstTimes[j];
+                burstTimes[j] = burstTimes[j + 1];
+                burstTimes[j + 1] = temp;
             }
         }
- 
-        //Swapping processes
-        swap(&p[i], &p[m]);
-        swap(&b[i], &b[m]);
-        swap(&index[i],&index[m]);
     }
- 
-    // T stores the starting time of process
-    int t=0;
- 
-    //Printing scheduled process
-    printf("Order of process Execution is\n");
-    for(int i=0;i<n;i++)
-    {
-        printf("P%d is executed from %d to %d\n",index[i],t,t+b[i]);
-        t+=b[i];
+
+    // Calculate waiting time, turnaround time, average waiting time, and average turnaround time
+    int waitingTime[n], turnaroundTime[n];
+    float avgWaitingTime = 0, avgTurnaroundTime = 0;
+
+    waitingTime[0] = 0;
+    turnaroundTime[0] = burstTimes[0];
+
+    for (int i = 1; i < n; i++) {
+        waitingTime[i] = turnaroundTime[i - 1];
+        turnaroundTime[i] = waitingTime[i] + burstTimes[i];
+        avgWaitingTime += waitingTime[i];
+        avgTurnaroundTime += turnaroundTime[i];
     }
-    printf("\n");
-    printf("Process Id     Burst Time   Wait Time    TurnAround Time\n");
-    int wait_time=0;
-    for(int i=0;i<n;i++)
-    {
-        printf("P%d          %d          %d          %d\n",index[i],b[i],wait_time,wait_time + b[i]);
-        wait_time += b[i];
+
+    // Display the schedule and performance metrics
+    printf("\nProcess Schedule (Priority Scheduling):\n");
+    printf("-----------------------------------------------------------\n");
+    printf("Process ID | Priority | Burst Time | Waiting Time | Turnaround Time\n");
+    printf("-----------------------------------------------------------\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("   %2d      |    %2d    |     %2d      |        %2d      |     %2d      \n",
+               processes[i], priorities[i], burstTimes[i], waitingTime[i], turnaroundTime[i]);
     }
+
+    printf("-----------------------------------------------------------\n");
+    printf("Average Waiting Time: %.2f\n", avgWaitingTime / n);
+    printf("Average Turnaround Time: %.2f\n", avgTurnaroundTime / n);
+}
+
+int main() {
+    // Number of processes
+    int n;
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    // Arrays to store process details
+    int processes[n];
+    int priorities[n];
+    int burstTimes[n];
+
+    // Input process details
+    printf("Enter Priority and Burst time for all : \n");
+    for (int i = 0; i < n; i++) {
+        processes[i] = i + 1;
+        printf("For P%d: ", i + 1);
+        scanf("%d %d", &priorities[i], &burstTimes[i]);
+    }
+
+    // Perform Priority Scheduling and calculate performance metrics
+    priorityScheduling(processes, priorities, burstTimes, n);
+
     return 0;
 }

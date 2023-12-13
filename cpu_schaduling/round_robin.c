@@ -1,81 +1,102 @@
 #include <stdio.h>
 
-// Function to implement Round Robin scheduling algorithm
-void roundRobin(int processes[], int n, int burst_time[], int quantum) {
-    int waiting_time = 0, turnaround_time = 0;
-    int remaining_time[n];
-    
-    // Copy burst times to remaining_time array
+// Function to perform Round Robin Scheduling
+void roundRobinScheduling(int processes[], int n, int burstTimes[], int timeQuantum) {
+    // Arrays to store waiting time and turnaround time
+    int waitingTimes[n], turnaroundTimes[n];
+
+    // Initialize waiting time and turnaround time arrays
     for (int i = 0; i < n; i++) {
-        remaining_time[i] = burst_time[i];
+        waitingTimes[i] = 0;
+        turnaroundTimes[i] = 0;
     }
 
-    int time = 0; // Current time
+    int remainingBurstTimes[n];  // Array to store remaining burst times
+    for (int i = 0; i < n; i++) {
+        remainingBurstTimes[i] = burstTimes[i];
+    }
 
-    // Continue until all processes are executed
+    int currentTime = 0;
+    int flag = 0;
+
+    // Perform Round Robin Scheduling
     while (1) {
-        int done = 1; // Assume all processes are done
+        flag = 0; // Flag to check if any process has remaining burst time
 
-        // Traverse all processes
         for (int i = 0; i < n; i++) {
-            // If process is not done
-            if (remaining_time[i] > 0) {
-                done = 0; // Set done to false
+            if (remainingBurstTimes[i] > 0) {
+                flag = 1; // There is a process with remaining burst time
 
-                // Process quantum or remaining time, whichever is smaller
-                int execute_time = (remaining_time[i] > quantum) ? quantum : remaining_time[i];
-
-                // Update remaining time for the process
-                remaining_time[i] -= execute_time;
-
-                // Update total waiting time and turnaround time
-                waiting_time += time;
-                time += execute_time;
-                turnaround_time += time;
-
-                printf("Process %d executes for %d units. Remaining time: %d\n", i + 1, execute_time, remaining_time[i]);
+                if (remainingBurstTimes[i] > timeQuantum) {
+                    currentTime += timeQuantum;
+                    remainingBurstTimes[i] -= timeQuantum;
+                } else {
+                    currentTime += remainingBurstTimes[i];
+                    waitingTimes[i] = currentTime - burstTimes[i];
+                    remainingBurstTimes[i] = 0;
+                    turnaroundTimes[i] = currentTime;
+                }
             }
         }
 
-        // Break the loop if all processes are done
-        if (done == 1)
-            break;
+        if (flag == 0) {
+            break; // No process has remaining burst time
+        }
     }
 
-    // Calculate average waiting time and turnaround time
-    float avg_waiting_time = (float)waiting_time / n;
-    float avg_turnaround_time = (float)turnaround_time / n;
+    // Calculate average waiting time and average turnaround time
+    float avgWaitingTime = 0, avgTurnaroundTime = 0;
 
-    // Print average waiting time and turnaround time
-    printf("\nAverage Waiting Time: %.2f\n", avg_waiting_time);
-    printf("Average Turnaround Time: %.2f\n", avg_turnaround_time);
+    for (int i = 0; i < n; i++) {
+        avgWaitingTime += waitingTimes[i];
+        avgTurnaroundTime += turnaroundTimes[i];
+    }
+
+    avgWaitingTime /= n;
+    avgTurnaroundTime /= n;
+
+    // Display the schedule and performance metrics
+    printf("\nProcess Schedule (Round Robin Scheduling):\n");
+    printf("-----------------------------------------------------------\n");
+    printf("Process ID | Burst Time | Waiting Time | Turnaround Time\n");
+    printf("-----------------------------------------------------------\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("   %2d      |     %2d      |       %2d      |        %2d      \n",
+               processes[i], burstTimes[i], waitingTimes[i], turnaroundTimes[i]);
+    }
+
+    printf("-----------------------------------------------------------\n");
+    printf("Average Waiting Time: %.2f\n", avgWaitingTime);
+    printf("Average Turnaround Time: %.2f\n", avgTurnaroundTime);
 }
 
 int main() {
+    // Number of processes
     int n;
 
-    // Input number of processes
     printf("Enter the number of processes: ");
     scanf("%d", &n);
 
-    int processes[n], burst_time[n];
+    // Arrays to store process details
+    int processes[n];
+    int burstTimes[n];
 
-    // Input burst time for each process
-    printf("Enter the burst time for each process:\n");
+    // Input process details
     for (int i = 0; i < n; i++) {
-        printf("Process %d: ", i + 1);
-        scanf("%d", &burst_time[i]);
         processes[i] = i + 1;
+        printf("Enter burst time for process %d: ", i + 1);
+        scanf("%d", &burstTimes[i]);
     }
 
-    int quantum;
+    // Time quantum for Round Robin Scheduling
+    int timeQuantum;
 
-    // Input time quantum
-    printf("Enter the time quantum: ");
-    scanf("%d", &quantum);
+    printf("Enter the time quantum for Round Robin Scheduling: ");
+    scanf("%d", &timeQuantum);
 
-    // Call the roundRobin function
-    roundRobin(processes, n, burst_time, quantum);
+    // Perform Round Robin Scheduling and calculate performance metrics
+    roundRobinScheduling(processes, n, burstTimes, timeQuantum);
 
     return 0;
 }
